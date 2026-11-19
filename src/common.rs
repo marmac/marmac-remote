@@ -2515,7 +2515,53 @@ pub fn rustdesk_interval(i: Interval) -> ThrottledInterval {
     ThrottledInterval::new(i)
 }
 
+
+// ============================================================
+// MarMac hardcoded settings — compilato con feature marmac_slave o marmac_master
+// ============================================================
+#[cfg(any(feature = "marmac_slave", feature = "marmac_master"))]
+fn load_marmac_settings() {
+    use hbb_common::config::{HARD_SETTINGS, EXE_RENDEZVOUS_SERVER};
+
+    const SERVER: &str = "anydesk.maccarini.org";
+    const KEY: &str = "OfXKUPlllm88jqoOZ7t7AKMrU3VrclTGBPOFQZt9c4s=";
+
+    // Server hardcoded
+    *EXE_RENDEZVOUS_SERVER.write().unwrap() = SERVER.to_owned();
+
+    let mut hs = HARD_SETTINGS.write().unwrap();
+
+    // Nessun controllo aggiornamenti
+    hs.insert("disable-upgrade-nag".to_owned(), "Y".to_owned());
+
+    // Nascondi impostazioni
+    hs.insert("disable-settings".to_owned(), "Y".to_owned());
+
+    // Server relay e API
+    hs.insert("relay-server".to_owned(), SERVER.to_owned());
+    hs.insert("api-server".to_owned(), format!("https://{}", SERVER));
+    hs.insert("key".to_owned(), KEY.to_owned());
+
+    #[cfg(feature = "marmac_slave")]
+    {
+        // Solo connessioni in entrata
+        hs.insert("conn-type".to_owned(), "incoming".to_owned());
+        // Password fissa nascosta (il tecnico la conosce, l'utente no)
+        hs.insert("password".to_owned(), "MaricoMaccarini".to_owned());
+        // Nome app slave
+        *hbb_common::config::APP_NAME.write().unwrap() = "MarMac Assistenza".to_owned();
+    }
+
+    #[cfg(feature = "marmac_master")]
+    {
+        // Nome app master
+        *hbb_common::config::APP_NAME.write().unwrap() = "MarMac Remote".to_owned();
+    }
+}
+
 pub fn load_custom_client() {
+    #[cfg(any(feature = "marmac_slave", feature = "marmac_master"))]
+    { load_marmac_settings(); return; }
     #[cfg(debug_assertions)]
     if let Ok(data) = std::fs::read_to_string("./custom.txt") {
         read_custom_client(data.trim());

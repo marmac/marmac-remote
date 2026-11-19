@@ -25,6 +25,13 @@ import 'package:window_manager/window_manager.dart';
 import 'package:window_size/window_size.dart' as window_size;
 import '../widgets/button.dart';
 
+
+// ============================================================
+// MarMac build flags — passati con --dart-define
+// ============================================================
+const bool kMarMacSlave = bool.fromEnvironment('MARMAC_SLAVE');
+const bool kMarMacMaster = bool.fromEnvironment('MARMAC_MASTER');
+
 class DesktopHomePage extends StatefulWidget {
   const DesktopHomePage({Key? key}) : super(key: key);
 
@@ -58,6 +65,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    if (kMarMacSlave) return _buildBlock(child: buildMarMacSlavePane(context));
     final isIncomingOnly = bind.isIncomingOnly();
     return _buildBlock(
         child: Row(
@@ -68,6 +76,118 @@ class _DesktopHomePageState extends State<DesktopHomePage>
         if (!isIncomingOnly) Expanded(child: buildRightPane(context)),
       ],
     ));
+  }
+
+  /// UI semplificata slave MarMac Assistenza
+  Widget buildMarMacSlavePane(BuildContext context) {
+    final model = gFFI.serverModel;
+    return ChangeNotifierProvider.value(
+      value: model,
+      child: Consumer<ServerModel>(
+        builder: (context, serverModel, child) {
+          return Container(
+            color: Theme.of(context).colorScheme.background,
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Logo MarMac
+                loadLogo(),
+                const SizedBox(height: 8),
+                // Titolo
+                Text(
+                  "Assistenza Remota",
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                const SizedBox(height: 24),
+                // Etichetta ID
+                Text(
+                  translate("ID"),
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Theme.of(context)
+                        .textTheme
+                        .titleLarge
+                        ?.color
+                        ?.withOpacity(0.6),
+                  ),
+                ),
+                // ID grande
+                GestureDetector(
+                  onDoubleTap: () {
+                    Clipboard.setData(
+                        ClipboardData(text: serverModel.serverId.text));
+                    showToast(translate("Copied"));
+                  },
+                  child: TextFormField(
+                    controller: serverModel.serverId,
+                    readOnly: true,
+                    textAlign: TextAlign.center,
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                    ),
+                    style: const TextStyle(
+                      fontSize: 36,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                OnlineStatusWidget(onSvcStatusChanged: () {}).marginOnly(bottom: 8),
+                const SizedBox(height: 24),
+                // Pulsante Accetta
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFE87722), // arancione MarMac
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                    ),
+                    icon: const Icon(Icons.check_circle_outline),
+                    label: Text(
+                      translate("Accept"),
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    onPressed: () {
+                      // Imposta modalità accettazione automatica (click mode)
+                      bind.mainSetOption(
+                          key: 'approve-mode', value: 'click');
+                    },
+                  ),
+                ),
+                const SizedBox(height: 12),
+                // Pulsante Esci
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                    ),
+                    icon: const Icon(Icons.close),
+                    label: Text(
+                      translate("Exit"),
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    onPressed: () {
+                      windowManager.close();
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
   }
 
   Widget _buildBlock({required Widget child}) {
@@ -92,6 +212,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
       buildTip(context),
       if (!isOutgoingOnly) buildIDBoard(context),
       if (!isOutgoingOnly) buildPasswordBoard(context),
+      if (kMarMacMaster || kMarMacSlave) buildMarMacButtons(context),
       FutureBuilder<Widget>(
         future: Future.value(
             Obx(() => buildHelpCards(stateGlobal.updateUrl.value))),
@@ -171,9 +292,61 @@ class _DesktopHomePageState extends State<DesktopHomePage>
                     onHover: (value) => _editHover.value = value,
                   ),
                 ),
+              ),
+          if (kMarMacMaster)
+              Positioned(
+                bottom: 8,
+                left: 12,
+                child: loadLogo(),
               )
           ],
         ),
+      ),
+    );
+  }
+
+  /// Pulsanti Accetta / Esci per slave e master MarMac
+  Widget buildMarMacButtons(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      child: Column(
+        children: [
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFE87722),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
+              ),
+              icon: const Icon(Icons.check_circle_outline),
+              label: Text(translate("Accept"),
+                  style: const TextStyle(fontSize: 15)),
+              onPressed: () {
+                bind.mainSetOption(key: 'approve-mode', value: 'click');
+              },
+            ),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
+              ),
+              icon: const Icon(Icons.close),
+              label: Text(translate("Exit"),
+                  style: const TextStyle(fontSize: 15)),
+              onPressed: () {
+                windowManager.close();
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -254,6 +427,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
   }
 
   Widget buildPopupMenu(BuildContext context) {
+    if (kMarMacMaster) return const SizedBox.shrink();
     final textColor = Theme.of(context).textTheme.titleLarge?.color;
     RxBool hover = false.obs;
     return InkWell(

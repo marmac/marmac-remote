@@ -10,13 +10,16 @@ export 'terminal_copy_shortcut.dart'
         TerminalClipboardNoticeRequest,
         TerminalClipboardNoticeCoordinator,
         kTerminalClipboardNoticeMessageKey,
-        writeTerminalClipboard,
         completeTerminalClipboardWrite,
         canConfigureTerminalClipboardPermission,
         canHandleTerminalClipboardWriteRequest,
         platformTerminalShortcuts;
 
 // Stub terminal and controller types replacing xterm
+class _StubBuffer {
+  String getText(dynamic selection) => '';
+}
+
 class _StubTerminal {
   void Function(String)? onOutput;
   void Function(int, int, int, int)? onResize;
@@ -24,6 +27,7 @@ class _StubTerminal {
   int viewHeight = 0;
   bool bracketedPasteMode = false;
   bool isUsingAltBuffer = false;
+  final buffer = _StubBuffer();
   void write(String text) {}
   void paste(String text) {}
   void textInput(String text) {}

@@ -2521,26 +2521,31 @@ pub fn rustdesk_interval(i: Interval) -> ThrottledInterval {
 // ============================================================
 #[cfg(any(feature = "marmac_slave", feature = "marmac_master"))]
 fn load_marmac_settings() {
-    use hbb_common::config::{HARD_SETTINGS, EXE_RENDEZVOUS_SERVER};
+    use hbb_common::config::{EXE_RENDEZVOUS_SERVER, HARD_SETTINGS, OVERWRITE_SETTINGS};
 
     const SERVER: &str = "anydesk.maccarini.org";
     const KEY: &str = "OfXKUPlllm88jqoOZ7t7AKMrU3VrclTGBPOFQZt9c4s=";
 
-    // Server hardcoded
     *EXE_RENDEZVOUS_SERVER.write().unwrap() = SERVER.to_owned();
+
+    // Config::get_option() legge OVERWRITE_SETTINGS, non HARD_SETTINGS:
+    // server, chiave e aggiornamenti vanno qui o vengono ignorati.
+    {
+        let mut ov = OVERWRITE_SETTINGS.write().unwrap();
+        ov.insert("custom-rendezvous-server".to_owned(), SERVER.to_owned());
+        ov.insert("relay-server".to_owned(), SERVER.to_owned());
+        ov.insert("api-server".to_owned(), format!("https://{}", SERVER));
+        ov.insert("key".to_owned(), KEY.to_owned());
+        // Un aggiornamento sostituirebbe il client MarMac con RustDesk ufficiale
+        ov.insert("enable-check-update".to_owned(), "N".to_owned());
+        ov.insert("allow-auto-update".to_owned(), "N".to_owned());
+    }
 
     let mut hs = HARD_SETTINGS.write().unwrap();
 
-    // Nessun controllo aggiornamenti
-    hs.insert("disable-upgrade-nag".to_owned(), "Y".to_owned());
-
-    // Nascondi impostazioni
     hs.insert("disable-settings".to_owned(), "Y".to_owned());
-
-    // Server relay e API
-    hs.insert("relay-server".to_owned(), SERVER.to_owned());
-    hs.insert("api-server".to_owned(), format!("https://{}", SERVER));
-    hs.insert("key".to_owned(), KEY.to_owned());
+    // Distribuzione solo portable; l'installer usa APP_NAME non quotato in `sc create`
+    hs.insert("disable-installation".to_owned(), "Y".to_owned());
 
     #[cfg(feature = "marmac_slave")]
     {
@@ -2554,6 +2559,8 @@ fn load_marmac_settings() {
 
     #[cfg(feature = "marmac_master")]
     {
+        // Solo connessioni in uscita: il master controlla, non è controllabile
+        hs.insert("conn-type".to_owned(), "outgoing".to_owned());
         // Nome app master
         *hbb_common::config::APP_NAME.write().unwrap() = "MarMac Remote".to_owned();
     }

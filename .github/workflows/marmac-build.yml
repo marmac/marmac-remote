@@ -135,11 +135,8 @@ jobs:
       - name: Patch flutter
         shell: bash
         run: |
-          cp .github/patches/flutter_3.24.4_dropdown_menu_enableFilter.diff $(dirname $(dirname $(which flutter)))
-          cd $(dirname $(dirname $(which flutter)))
-          if [[ "3.24.5" == "${{ env.FLUTTER_VERSION }}" ]]; then
-            git apply --ignore-whitespace flutter_3.24.4_dropdown_menu_enableFilter.diff
-          fi
+          DART=$(dirname $(which flutter))/../packages/flutter/lib/src/material/dropdown_menu.dart
+          python .github/scripts/patch_flutter_dropdown.py "$DART"
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@v1
@@ -284,11 +281,8 @@ jobs:
       - name: Patch flutter
         shell: bash
         run: |
-          cp .github/patches/flutter_3.24.4_dropdown_menu_enableFilter.diff $(dirname $(dirname $(which flutter)))
-          cd $(dirname $(dirname $(which flutter)))
-          if [[ "3.24.5" == "${{ env.FLUTTER_VERSION }}" ]]; then
-            git apply --ignore-whitespace flutter_3.24.4_dropdown_menu_enableFilter.diff
-          fi
+          DART=$(dirname $(which flutter))/../packages/flutter/lib/src/material/dropdown_menu.dart
+          python .github/scripts/patch_flutter_dropdown.py "$DART"
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@v1

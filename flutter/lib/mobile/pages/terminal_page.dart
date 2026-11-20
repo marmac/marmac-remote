@@ -15,7 +15,6 @@ import 'package:flutter_hbb/models/terminal_mouse_handler.dart';
 import 'package:flutter_hbb/mobile/terminal_keyboard_utils.dart';
 import 'package:flutter_hbb/web/dummy.dart'
     if (dart.library.html) 'package:flutter_hbb/web/terminal_font.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:xterm/xterm.dart';
 import '../../desktop/pages/terminal_connection_manager.dart';
 import '../../consts.dart';
@@ -120,11 +119,8 @@ class _TerminalPageState extends State<TerminalPage>
       _terminalClipboardNoticeController;
   final _terminalClipboardNotice = TerminalClipboardNoticeCoordinator<int>();
 
-  // For web only.
-  // 'monospace' does not work on web, use Google Fonts, `??` is only for null safety.
-  final String _robotoMonoFontFamily = isWeb
-      ? (GoogleFonts.robotoMono().fontFamily ?? 'monospace')
-      : 'monospace';
+  // google_fonts removed; fallback to system monospace
+  final String _robotoMonoFontFamily = 'monospace';
 
   SessionID get sessionId => _ffi.sessionId;
 

@@ -41,8 +41,15 @@ if (-not (Test-Path $exe)) { throw "Manca $exe" }
 
 $archive = Join-Path $work "build.7z"
 Remove-Item $archive -ErrorAction SilentlyContinue
-& $sevenZip a -t7z $archive "$BuildDir\*" -mx=5 | Out-Null
-if ($LASTEXITCODE -ne 0) { throw "7z fallito" }
+# Da dentro la cartella: i file devono stare alla radice dell'archivio,
+# altrimenti RunProgram="rustdesk.exe" non li trova.
+Push-Location $BuildDir
+try {
+    & $sevenZip a -t7z $archive * -mx=5 | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "7z fallito" }
+} finally { Pop-Location }
+$names = & $sevenZip l -slt $archive | Select-String '^Path = rustdesk\.exe$'
+if (-not $names) { throw "rustdesk.exe non è alla radice dell'archivio" }
 
 # Config in UTF-8 senza BOM: con il BOM 7zSD non riconosce l'intestazione.
 $config = ";!@Install@!UTF-8!`r`nTitle=`"$Title`"`r`nRunProgram=`"rustdesk.exe`"`r`n;!@InstallEnd@!`r`n"

@@ -187,17 +187,53 @@ jobs:
           flutter build windows --release
           cd ..
 
-      - name: Collect artifact
-        shell: bash
+      - name: Package MarMac-Assistenza as single portable exe
+        shell: powershell
         run: |
-          mkdir -p dist/MarMac-Assistenza
-          cp -r flutter/build/windows/x64/runner/Release/* dist/MarMac-Assistenza/
+          # Installa ps2exe per compilare il launcher PowerShell in exe silenzioso
+          Install-Module -Name ps2exe -Scope CurrentUser -Force -ErrorAction Stop
+
+          # Compila il launcher in exe (nessuna finestra, nessuna console)
+          Invoke-ps2exe `
+            -InputFile res\marmac-slave-launcher.ps1 `
+            -OutputFile flutter\build\windows\x64\runner\Release\MarMac-Assistenza.exe `
+            -NoConsole -NoOutput -IconFile res\icon.ico `
+            -Title "MarMac Assistenza" -Version "1.5.3.0"
+
+          # Rinomina rustdesk.exe → rustdesk.exe (invariato), il launcher è il punto di ingresso
+          # Crea il SFX autoestraente con 7-Zip
+          $buildDir = "flutter\build\windows\x64\runner\Release"
+          $sfxModule = "C:\Program Files\7-Zip\7z.sfx"
+          $configFile = "res\sfx-slave-config.txt"
+
+          # Aggiorna il config SFX per lanciare il launcher invece del rustdesk diretto
+          $sfxConfig = @"
+          ;!@Install@!UTF-8!
+          Title="MarMac Assistenza"
+          BeginPrompt="No"
+          RunProgram="MarMac-Assistenza.exe"
+          ;!@InstallEnd@!
+          "@
+          $sfxConfig | Set-Content -Path sfx-config.txt -Encoding UTF8
+
+          # Crea archivio 7z del contenuto build
+          & "C:\Program Files\7-Zip\7z.exe" a -t7z build.7z ".\$buildDir\*" -mx=5
+
+          # Concatena: modulo SFX + config + archivio = exe autoestraente
+          $sfxBytes   = [System.IO.File]::ReadAllBytes($sfxModule)
+          $cfgBytes   = [System.IO.Text.Encoding]::UTF8.GetBytes((Get-Content sfx-config.txt -Raw))
+          $archBytes  = [System.IO.File]::ReadAllBytes("build.7z")
+          $outStream  = [System.IO.File]::OpenWrite("MarMac-Assistenza-portable.exe")
+          $outStream.Write($sfxBytes,  0, $sfxBytes.Length)
+          $outStream.Write($cfgBytes,  0, $cfgBytes.Length)
+          $outStream.Write($archBytes, 0, $archBytes.Length)
+          $outStream.Close()
 
       - name: Upload MarMac-Assistenza
         uses: actions/upload-artifact@v4
         with:
           name: MarMac-Assistenza-windows-x64
-          path: dist/MarMac-Assistenza/
+          path: MarMac-Assistenza-portable.exe
           retention-days: 90
 
   build-master:
@@ -300,15 +336,43 @@ jobs:
           flutter build windows --release
           cd ..
 
-      - name: Collect artifact
-        shell: bash
+      - name: Package MarMac-Remote as single portable exe
+        shell: powershell
         run: |
-          mkdir -p dist/MarMac-Remote
-          cp -r flutter/build/windows/x64/runner/Release/* dist/MarMac-Remote/
+          Install-Module -Name ps2exe -Scope CurrentUser -Force -ErrorAction Stop
+
+          Invoke-ps2exe `
+            -InputFile res\marmac-master-launcher.ps1 `
+            -OutputFile flutter\build\windows\x64\runner\Release\MarMac-Remote.exe `
+            -NoConsole -NoOutput -IconFile res\icon.ico `
+            -Title "MarMac Remote" -Version "1.5.3.0"
+
+          $buildDir = "flutter\build\windows\x64\runner\Release"
+
+          $sfxConfig = @"
+          ;!@Install@!UTF-8!
+          Title="MarMac Remote"
+          BeginPrompt="No"
+          RunProgram="MarMac-Remote.exe"
+          ;!@InstallEnd@!
+          "@
+          $sfxConfig | Set-Content -Path sfx-config.txt -Encoding UTF8
+
+          & "C:\Program Files\7-Zip\7z.exe" a -t7z build.7z ".\$buildDir\*" -mx=5
+
+          $sfxModule  = "C:\Program Files\7-Zip\7z.sfx"
+          $sfxBytes   = [System.IO.File]::ReadAllBytes($sfxModule)
+          $cfgBytes   = [System.IO.Text.Encoding]::UTF8.GetBytes((Get-Content sfx-config.txt -Raw))
+          $archBytes  = [System.IO.File]::ReadAllBytes("build.7z")
+          $outStream  = [System.IO.File]::OpenWrite("MarMac-Remote-portable.exe")
+          $outStream.Write($sfxBytes,  0, $sfxBytes.Length)
+          $outStream.Write($cfgBytes,  0, $cfgBytes.Length)
+          $outStream.Write($archBytes, 0, $archBytes.Length)
+          $outStream.Close()
 
       - name: Upload MarMac-Remote
         uses: actions/upload-artifact@v4
         with:
           name: MarMac-Remote-windows-x64
-          path: dist/MarMac-Remote/
+          path: MarMac-Remote-portable.exe
           retention-days: 90

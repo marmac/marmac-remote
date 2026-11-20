@@ -1,0 +1,5 @@
+;!@Install@!UTF-8!
+Title="MarMac Assistenza"
+BeginPrompt="No"
+AutoInstall="rustdesk.exe"
+;!@InstallEnd@!

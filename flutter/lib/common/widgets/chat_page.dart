@@ -1,4 +1,3 @@
-import 'package:dash_chat_2/dash_chat_2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hbb/common.dart';
 import 'package:flutter_hbb/models/chat_model.dart';
@@ -33,7 +32,6 @@ class ChatPage extends StatelessWidget implements PageShape {
         icon: unreadTopRightBuilder(gFFI.chatModel.mobileUnreadSum,
             icon: Icon(Icons.group)),
         itemBuilder: (context) {
-          // only mobile need [appBarActions], just bind gFFI.chatModel
           final chatModel = gFFI.chatModel;
           return chatModel.messages.entries.map((entry) {
             final key = entry.key;
@@ -93,83 +91,109 @@ class ChatPage extends StatelessWidget implements PageShape {
                                 (e) => e.id == chatModel.currentKey.connId)
                             ?.disconnected ==
                         true;
-            return Stack(
+            final messages =
+                chatModel.messages[chatModel.currentKey]?.chatMessages ?? [];
+            return Column(
               children: [
-                LayoutBuilder(builder: (context, constraints) {
-                  final chat = DashChat(
-                    onSend: chatModel.send,
-                    currentUser: chatModel.me,
-                    messages: chatModel
-                            .messages[chatModel.currentKey]?.chatMessages ??
-                        [],
-                    readOnly: readOnly,
-                    inputOptions: InputOptions(
-                      focusNode: chatModel.inputNode,
-                      textController: chatModel.textController,
-                      inputTextStyle: TextStyle(
-                          fontSize: 14,
-                          color: Theme.of(context).textTheme.titleLarge?.color),
-                      inputDecoration: InputDecoration(
-                        isDense: true,
-                        hintText: translate('Write a message'),
-                        filled: true,
-                        fillColor: Theme.of(context).colorScheme.background,
-                        contentPadding: EdgeInsets.all(10),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10.0),
-                          borderSide: const BorderSide(
-                            width: 1,
-                            style: BorderStyle.solid,
+                Expanded(
+                  child: ListView.builder(
+                    reverse: true,
+                    padding: const EdgeInsets.all(8),
+                    itemCount: messages.length,
+                    itemBuilder: (context, index) {
+                      final msg = messages[index];
+                      final isOwn = msg.user.id == chatModel.me.id;
+                      return Align(
+                        alignment: isOwn
+                            ? Alignment.centerRight
+                            : Alignment.centerLeft,
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 6),
+                          constraints: BoxConstraints(
+                              maxWidth:
+                                  MediaQuery.of(context).size.width * 0.7),
+                          decoration: BoxDecoration(
+                            color: isOwn ? MyTheme.accent : Colors.blueGrey,
+                            borderRadius: BorderRadius.only(
+                              topLeft: const Radius.circular(8),
+                              topRight: const Radius.circular(8),
+                              bottomRight:
+                                  Radius.circular(isOwn ? 2 : 8),
+                              bottomLeft:
+                                  Radius.circular(isOwn ? 8 : 2),
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: isOwn
+                                ? CrossAxisAlignment.end
+                                : CrossAxisAlignment.start,
+                            children: [
+                              Text(msg.text,
+                                  style:
+                                      const TextStyle(color: Colors.white)),
+                              Text(
+                                "${msg.createdAt.hour}:${msg.createdAt.minute.toString().padLeft(2, '0')}",
+                                style: const TextStyle(
+                                    color: Colors.white, fontSize: 8),
+                              ),
+                            ],
                           ),
                         ),
-                      ),
-                      sendButtonBuilder: defaultSendButton(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 6, vertical: 0),
-                        color: MyTheme.accent,
-                        icon: Icons.send_rounded,
-                      ),
-                    ),
-                    messageOptions: MessageOptions(
-                      showOtherUsersAvatar: false,
-                      showOtherUsersName: false,
-                      textColor: Colors.white,
-                      maxWidth: constraints.maxWidth * 0.7,
-                      messageTextBuilder: (message, _, __) {
-                        final isOwnMessage = message.user.id.isBlank!;
-                        return Column(
-                          crossAxisAlignment: isOwnMessage
-                              ? CrossAxisAlignment.end
-                              : CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Text(message.text,
-                                style: TextStyle(color: Colors.white)),
-                            Text(
-                              "${message.createdAt.hour}:${message.createdAt.minute.toString().padLeft(2, '0')}",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 8,
+                      );
+                    },
+                  ),
+                ),
+                if (!readOnly)
+                  Padding(
+                    padding: const EdgeInsets.all(6),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            focusNode: chatModel.inputNode,
+                            controller: chatModel.textController,
+                            style: TextStyle(
+                                fontSize: 14,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .titleLarge
+                                    ?.color),
+                            decoration: InputDecoration(
+                              isDense: true,
+                              hintText: translate('Write a message'),
+                              filled: true,
+                              fillColor:
+                                  Theme.of(context).colorScheme.background,
+                              contentPadding: const EdgeInsets.all(10),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: const BorderSide(width: 1),
                               ),
-                            ).marginOnly(top: 3),
-                          ],
-                        );
-                      },
-                      messageDecorationBuilder:
-                          (message, previousMessage, nextMessage) {
-                        final isOwnMessage = message.user.id.isBlank!;
-                        return defaultMessageDecoration(
-                          color:
-                              isOwnMessage ? MyTheme.accent : Colors.blueGrey,
-                          borderTopLeft: 8,
-                          borderTopRight: 8,
-                          borderBottomRight: isOwnMessage ? 2 : 8,
-                          borderBottomLeft: isOwnMessage ? 8 : 2,
-                        );
-                      },
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 0),
+                          color: MyTheme.accent,
+                          icon: const Icon(Icons.send_rounded),
+                          onPressed: () {
+                            final text =
+                                chatModel.textController.text.trim();
+                            if (text.isEmpty) return;
+                            chatModel.send(ChatMessage(
+                              text: text,
+                              user: chatModel.me,
+                              createdAt: DateTime.now(),
+                            ));
+                            chatModel.textController.clear();
+                          },
+                        ),
+                      ],
                     ),
-                  ).workaroundFreezeLinuxMint();
-                  return SelectionArea(child: chat);
-                }),
+                  ),
               ],
             ).paddingOnly(bottom: 8);
           },

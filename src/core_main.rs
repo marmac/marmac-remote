@@ -328,27 +328,11 @@ pub fn core_main() -> Option<CoreMainAction> {
                     crate::virtual_display_manager::amyuni_idd::uninstall_driver()
                 );
                 return None;
-            } else if args[0] == "--install-remote-printer" {
-                #[cfg(windows)]
-                if crate::platform::is_win_10_or_greater() {
-                    match remote_printer::install_update_printer(&crate::get_app_name()) {
-                        Ok(_) => {
-                            log::info!("Remote printer installed/updated successfully");
-                        }
-                        Err(e) => {
-                            log::error!("Failed to install/update the remote printer: {}", e);
-                        }
-                    }
-                } else {
-                    log::error!("Win10 or greater required!");
-                }
-                return None;
-            } else if args[0] == "--uninstall-remote-printer" {
-                #[cfg(windows)]
-                if crate::platform::is_win_10_or_greater() {
-                    remote_printer::uninstall_printer(&crate::get_app_name());
-                    log::info!("Remote printer uninstalled");
-                }
+            // remote printer commands removed for MarMac build
+            } else if args[0] == "--install-remote-printer"
+                || args[0] == "--uninstall-remote-printer"
+            {
+                log::info!("Remote printer feature not available in this build");
                 return None;
             }
         }

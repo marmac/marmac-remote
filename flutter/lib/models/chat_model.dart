@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:dash_chat_2/dash_chat_2.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:draggable_float_widget/draggable_float_widget.dart';
 import 'package:flutter/material.dart';
@@ -21,6 +20,20 @@ import '../common.dart';
 import '../common/widgets/overlay.dart';
 import '../main.dart';
 import 'model.dart';
+
+// Minimal stubs replacing dash_chat_2 types (library removed)
+class ChatUser {
+  String id;
+  String? firstName;
+  ChatUser({required this.id, this.firstName});
+}
+
+class ChatMessage {
+  String text;
+  ChatUser user;
+  DateTime createdAt;
+  ChatMessage({required this.text, required this.user, required this.createdAt});
+}
 
 class MessageKey {
   final String peerId;

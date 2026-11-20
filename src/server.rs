@@ -80,8 +80,7 @@ mod service;
 mod video_qos;
 pub mod video_service;
 
-#[cfg(all(target_os = "windows", feature = "flutter"))]
-pub mod printer_service;
+// printer_service: removed for MarMac build
 
 pub type Childs = Arc<Mutex<Vec<std::process::Child>>>;
 type ConnMap = HashMap<i32, ConnInner>;
@@ -161,20 +160,7 @@ pub fn new() -> ServerPtr {
             server.add_service(Box::new(input_service::new_window_focus()));
         }
     }
-    #[cfg(all(target_os = "windows", feature = "flutter"))]
-    {
-        match printer_service::init(&crate::get_app_name()) {
-            Ok(()) => {
-                log::info!("printer service initialized");
-                server.add_service(Box::new(printer_service::new(
-                    printer_service::NAME.to_owned(),
-                )));
-            }
-            Err(e) => {
-                log::error!("printer service init failed: {}", e);
-            }
-        }
-    }
+    // printer service removed for MarMac build
     // Terminal service is created per connection, not globally
     Arc::new(RwLock::new(server))
 }

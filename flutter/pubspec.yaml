@@ -37,10 +37,6 @@ dependencies:
   url_launcher: ^6.3.1
   url_launcher_ios: ^6.3.2
   toggle_switch: ^2.1.0
-  dash_chat_2:
-    git:
-      url: https://github.com/rustdesk-org/Dash-Chat-2
-      ref: bd6b5b41254e57c5bcece202ebfb234de63e6487
   draggable_float_widget: ^0.1.0
   settings_ui: ^2.0.2
   flutter_breadcrumb: ^1.0.1
@@ -108,8 +104,8 @@ dependencies:
   pull_down_button: ^0.9.3
   device_info_plus: ^9.1.0
   extended_text: 14.0.0
-  xterm: 4.0.0
-  sqflite: 2.2.0
+  # xterm: removed — SSH Terminal feature removed for MarMac build
+  # sqflite: removed — chat/database feature removed for MarMac build
   qr_flutter: ^4.1.0
   vector_math: ^2.1.4
 

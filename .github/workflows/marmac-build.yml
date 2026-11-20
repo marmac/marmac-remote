@@ -175,7 +175,7 @@ jobs:
           fi
 
       - name: Build Rust lib (marmac_slave)
-        run: cargo build --locked --release --lib --features flutter,marmac_slave
+        run: cargo build --release --lib --features flutter,marmac_slave
 
       - name: Build Flutter (marmac_slave)
         run: |
@@ -321,7 +321,7 @@ jobs:
           fi
 
       - name: Build Rust lib (marmac_master)
-        run: cargo build --locked --release --lib --features flutter,marmac_master
+        run: cargo build --release --lib --features flutter,marmac_master
 
       - name: Build Flutter (marmac_master)
         run: |

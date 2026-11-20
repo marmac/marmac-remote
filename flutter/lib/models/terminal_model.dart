@@ -116,8 +116,4 @@ class TerminalModel with ChangeNotifier {
   }
 }
 
-Future<bool> writeTerminalClipboard(
-  String text, {
-  bool userInitiated = false,
-}) async =>
-    false;
+// writeTerminalClipboard is provided by terminal_copy_shortcut.dart (re-exported above)

@@ -105,14 +105,7 @@ fn verified_msi_install_commands(msi: &Path, quiet: bool) -> ResultType<String> 
     let quiet_args = if quiet { " /qn LAUNCH_TRAY_APP=N" } else { "" };
     let app_name = crate::get_app_name();
     let subkey = format!(".{}", app_name.to_lowercase());
-    let printer_installed = get_reg_of_hkcr(&subkey, REG_NAME_INSTALL_PRINTER).as_deref()
-        != Some("0")
-        && remote_printer::is_rd_printer_installed(&app_name).unwrap_or_else(|err| {
-            log::warn!(
-                "Failed to check printer installation status: {err}; skipping printer installation"
-            );
-            false
-        });
+    let printer_installed = false; // remote_printer removed
     let printer_args = if printer_installed {
         ""
     } else {

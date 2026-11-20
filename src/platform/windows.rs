@@ -1400,10 +1400,7 @@ pub fn get_silent_install_options(printer_override: Option<bool>) -> &'static st
             let subkey = format!(".{}", app_name.to_lowercase());
             let printer = get_reg_of_hkcr(&subkey, REG_NAME_INSTALL_PRINTER);
             printer.as_deref() == Some("1")
-                && remote_printer::is_rd_printer_installed(&app_name).unwrap_or_else(|err| {
-                    log::warn!("Failed to check printer installation status: {err}; skipping printer installation");
-                    false
-                })
+                && false // remote_printer removed
         }
     };
     if install_printer {
@@ -3624,8 +3621,8 @@ reg add {subkey} /f /v EstimatedSize /t REG_DWORD /d {size}
         "".to_owned()
     };
 
-    // No need to check the install option here, `is_rd_printer_installed` rarely fails.
-    let is_printer_installed = remote_printer::is_rd_printer_installed(&app_name).unwrap_or(false);
+    // remote_printer removed — printer never installed in MarMac build.
+    let is_printer_installed = false;
     // Do nothing if the printer is not installed or failed to query if the printer is installed.
     let (uninstall_printer_cmd, install_printer_cmd) = if is_printer_installed {
         (

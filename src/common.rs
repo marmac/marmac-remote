@@ -2543,12 +2543,12 @@ fn load_marmac_settings() {
 
     let mut hs = HARD_SETTINGS.write().unwrap();
 
-    hs.insert("disable-settings".to_owned(), "Y".to_owned());
     // Distribuzione solo portable; l'installer usa APP_NAME non quotato in `sc create`
     hs.insert("disable-installation".to_owned(), "Y".to_owned());
 
     #[cfg(feature = "marmac_slave")]
     {
+        hs.insert("disable-settings".to_owned(), "Y".to_owned());
         // Solo connessioni in entrata
         hs.insert("conn-type".to_owned(), "incoming".to_owned());
         // Nome app slave
@@ -2557,8 +2557,7 @@ fn load_marmac_settings() {
 
     #[cfg(feature = "marmac_master")]
     {
-        // Solo connessioni in uscita: il master controlla, non è controllabile
-        hs.insert("conn-type".to_owned(), "outgoing".to_owned());
+        // Bidirezionale (controlla e può essere controllato), password casuale
         // Nome app master
         *hbb_common::config::APP_NAME.write().unwrap() = "MarMac Remote".to_owned();
     }

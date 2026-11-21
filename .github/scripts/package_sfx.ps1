@@ -33,7 +33,19 @@ $rcedit = Join-Path $work "rcedit-x64.exe"
 if (-not (Test-Path $rcedit)) {
     Invoke-WebRequest -Uri "https://github.com/electron/rcedit/releases/download/v2.0.0/rcedit-x64.exe" -OutFile $rcedit
 }
-& $rcedit $sfx --set-icon $Icon --set-version-string "FileDescription" $Title --set-version-string "ProductName" $Title
+# Il manifest (supportedOS + requestedExecutionLevel) disattiva il rilevamento
+# installer di Windows e la finestra "Risoluzione problemi compatibilità" alla chiusura.
+$manifest = Join-Path $PSScriptRoot "sfx.manifest"
+& $rcedit $sfx --set-icon $Icon `
+    --application-manifest $manifest `
+    --set-version-string "FileDescription" $Title `
+    --set-version-string "ProductName" $Title `
+    --set-version-string "CompanyName" "MACCARINI MARICO ANGELO E C. SAS" `
+    --set-version-string "LegalCopyright" "MarMac - www.marmac.it" `
+    --set-version-string "OriginalFilename" $Output `
+    --set-version-string "InternalName" $Title `
+    --set-version-string "Comments" "" `
+    --set-file-version "1.0.0.0" --set-product-version "1.0.0.0"
 if ($LASTEXITCODE -ne 0) { throw "rcedit fallito" }
 
 $exe = Join-Path $BuildDir "rustdesk.exe"

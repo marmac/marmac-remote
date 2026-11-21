@@ -3778,12 +3778,12 @@ Widget loadPowered(BuildContext context) {
     cursor: SystemMouseCursors.click,
     child: GestureDetector(
       onTap: () {
-        launchUrl(Uri.parse('https://rustdesk.com'));
+        launchUrl(Uri.parse('https://www.marmac.it/'));
       },
       child: Opacity(
           opacity: 0.5,
           child: Text(
-            translate("powered_by_me"),
+            'www.marmac.it',
             overflow: TextOverflow.clip,
             style: Theme.of(context)
                 .textTheme
@@ -3848,7 +3848,7 @@ class _LogoState extends State<_Logo> {
             },
           );
           return Container(
-            constraints: BoxConstraints(maxWidth: 300, maxHeight: 60),
+            constraints: BoxConstraints(maxWidth: 300, maxHeight: 170),
             child: image,
           ).marginOnly(left: 12, right: 12, top: 12);
         }

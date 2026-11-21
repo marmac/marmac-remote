@@ -205,14 +205,15 @@ class _DesktopHomePageState extends State<DesktopHomePage>
           alignment: Alignment.center,
           child: loadPowered(context),
         ),
-      Align(
-        alignment: Alignment.center,
-        child: loadLogo(),
-      ),
+      if (!kMarMacMaster)
+        Align(
+          alignment: Alignment.center,
+          child: loadLogo(),
+        ),
       buildTip(context),
       if (!isOutgoingOnly) buildIDBoard(context),
       if (!isOutgoingOnly) buildPasswordBoard(context),
-      if (kMarMacMaster || kMarMacSlave) buildMarMacButtons(context),
+      if (kMarMacSlave) buildMarMacButtons(context),
       FutureBuilder<Widget>(
         future: Future.value(
             Obx(() => buildHelpCards(stateGlobal.updateUrl.value))),
@@ -297,7 +298,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
               Positioned(
                 bottom: 8,
                 left: 12,
-                child: loadLogo(),
+                child: SizedBox(width: 176, height: 110, child: loadLogo()),
               )
           ],
         ),
@@ -427,7 +428,6 @@ class _DesktopHomePageState extends State<DesktopHomePage>
   }
 
   Widget buildPopupMenu(BuildContext context) {
-    if (kMarMacMaster) return const SizedBox.shrink();
     final textColor = Theme.of(context).textTheme.titleLarge?.color;
     RxBool hover = false.obs;
     return InkWell(

@@ -2557,7 +2557,10 @@ fn load_marmac_settings() {
 
     #[cfg(feature = "marmac_master")]
     {
-        // Bidirezionale (controlla e può essere controllato), password casuale
+        // Bidirezionale (controlla e può essere controllato), password casuale di 6 cifre
+        let mut ov = OVERWRITE_SETTINGS.write().unwrap();
+        ov.insert("temporary-password-length".to_owned(), "6".to_owned());
+        ov.insert("allow-numeric-one-time-password".to_owned(), "Y".to_owned());
         // Nome app master
         *hbb_common::config::APP_NAME.write().unwrap() = "MarMac Remote".to_owned();
     }

@@ -297,16 +297,16 @@ jobs:
         run: |
           cd flutter
           flutter pub get
-          flutter build windows --release
+          flutter build windows --release --dart-define=MARMAC_MASTER=true
           cd ..
 
       - name: Package MarMac-Remote as single portable exe
         shell: pwsh
-        run: ./.github/scripts/package_sfx.ps1 -Title "MarMac Remote" -Output "MarMac-Remote-portable.exe"
+        run: ./.github/scripts/package_sfx.ps1 -Title "MarMac Remote" -Output "DaRemoto-MarMac.exe"
 
       - name: Upload MarMac-Remote
         uses: actions/upload-artifact@v4
         with:
           name: MarMac-Remote-windows-x64
-          path: MarMac-Remote-portable.exe
+          path: DaRemoto-MarMac.exe
           retention-days: 90

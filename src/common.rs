@@ -2551,8 +2551,6 @@ fn load_marmac_settings() {
     {
         // Solo connessioni in entrata
         hs.insert("conn-type".to_owned(), "incoming".to_owned());
-        // Password fissa nascosta (il tecnico la conosce, l'utente no)
-        hs.insert("password".to_owned(), "MaricoMaccarini".to_owned());
         // Nome app slave
         *hbb_common::config::APP_NAME.write().unwrap() = "MarMac Assistenza".to_owned();
     }

@@ -200,15 +200,11 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     final isOutgoingOnly = bind.isOutgoingOnly();
     final children = <Widget>[
       if (!isOutgoingOnly) buildPresetPasswordWarning(),
-      if (bind.isCustomClient())
+      if (!kMarMacMaster) loadLogo(),
+      if (bind.isCustomClient() && !kMarMacMaster)
         Align(
           alignment: Alignment.center,
           child: loadPowered(context),
-        ),
-      if (!kMarMacMaster)
-        Align(
-          alignment: Alignment.center,
-          child: loadLogo(),
         ),
       buildTip(context),
       if (!isOutgoingOnly) buildIDBoard(context),
@@ -297,8 +293,15 @@ class _DesktopHomePageState extends State<DesktopHomePage>
           if (kMarMacMaster)
               Positioned(
                 bottom: 8,
-                left: 12,
-                child: SizedBox(width: 176, height: 110, child: loadLogo()),
+                left: 0,
+                right: 0,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    loadLogo(),
+                    if (bind.isCustomClient()) loadPowered(context),
+                  ],
+                ),
               )
           ],
         ),

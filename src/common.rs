@@ -2539,6 +2539,9 @@ fn load_marmac_settings() {
         // Un aggiornamento sostituirebbe il client MarMac con RustDesk ufficiale
         ov.insert("enable-check-update".to_owned(), "N".to_owned());
         ov.insert("allow-auto-update".to_owned(), "N".to_owned());
+        // Password monouso casuale di 6 cifre numeriche (slave e master)
+        ov.insert("temporary-password-length".to_owned(), "6".to_owned());
+        ov.insert("allow-numeric-one-time-password".to_owned(), "Y".to_owned());
     }
 
     let mut hs = HARD_SETTINGS.write().unwrap();
@@ -2557,10 +2560,7 @@ fn load_marmac_settings() {
 
     #[cfg(feature = "marmac_master")]
     {
-        // Bidirezionale (controlla e può essere controllato), password casuale di 6 cifre
-        let mut ov = OVERWRITE_SETTINGS.write().unwrap();
-        ov.insert("temporary-password-length".to_owned(), "6".to_owned());
-        ov.insert("allow-numeric-one-time-password".to_owned(), "Y".to_owned());
+        // Bidirezionale (controlla e può essere controllato)
         // Nome app master
         *hbb_common::config::APP_NAME.write().unwrap() = "MarMac Remote".to_owned();
     }

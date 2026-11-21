@@ -3842,15 +3842,16 @@ class _LogoState extends State<_Logo> {
         if (asset != null) {
           final image = Image.asset(
             asset,
-            fit: BoxFit.contain,
+            fit: BoxFit.fitWidth,
             errorBuilder: (ctx, error, stackTrace) {
               return Container();
             },
           );
-          return Container(
-            constraints: BoxConstraints(maxWidth: 300, maxHeight: 170),
+          // Tutta la larghezza del pannello sinistro, altezza proporzionale
+          return SizedBox(
+            width: double.infinity,
             child: image,
-          ).marginOnly(left: 12, right: 12, top: 12);
+          ).marginOnly(left: 8, right: 8, top: 8);
         }
         return const Offstage();
       },
